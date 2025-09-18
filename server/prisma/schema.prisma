@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  lineUserId  String?  @unique
+  email       String?  @unique
+  phone       String?  @unique
+  name        String
+  avatar      String?
+  gender      Gender?
+  birthday    DateTime?
+  address     String?
+  memberLevel MemberLevel @default(BASIC)
+  points      Int      @default(0)
+  totalSpent  Float    @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 關聯
+  bookings    Booking[]
+  payments    Payment[]
+  pointsHistory PointsHistory[]
+
+  @@map("users")
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  duration    Int     // 分鐘
+  price       Float
+  category    String
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 關聯
+  bookings    Booking[]
+
+  @@map("services")
+}
+
+model Staff {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?  @unique
+  email     String?  @unique
+  avatar    String?
+  specialties String[] // 專長服務
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 關聯
+  bookings  Booking[]
+
+  @@map("staff")
+}
+
+model Booking {
+  id        String      @id @default(cuid())
+  userId    String
+  serviceId String
+  staffId   String?
+  date      DateTime
+  startTime String      // HH:MM 格式
+  endTime   String      // HH:MM 格式
+  status    BookingStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // 關聯
+  user      User        @relation(fields: [userId], references: [id])
+  service   Service     @relation(fields: [serviceId], references: [id])
+  staff     Staff?      @relation(fields: [staffId], references: [id])
+  payments  Payment[]
+
+  @@map("bookings")
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  bookingId String
+  userId    String
+  amount    Float
+  method    PaymentMethod
+  status    PaymentStatus @default(PENDING)
+  transactionId String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // 關聯
+  booking   Booking       @relation(fields: [bookingId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  @@map("payments")
+}
+
+model PointsHistory {
+  id          String      @id @default(cuid())
+  userId      String
+  points      Int
+  type        PointsType
+  description String?
+  bookingId   String?
+  createdAt   DateTime    @default(now())
+
+  // 關聯
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@map("points_history")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String?
+  title     String
+  content   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  sentAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+model SystemSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  description String?
+
+  @@map("system_settings")
+}
+
+// 列舉類型
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MemberLevel {
+  BASIC
+  SILVER
+  GOLD
+  PLATINUM
+  VIP
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  LINE_PAY
+  TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PointsType {
+  EARNED
+  REDEEMED
+  EXPIRED
+  ADJUSTED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMATION
+  BOOKING_REMINDER
+  BOOKING_CANCELLATION
+  POINTS_EARNED
+  PROMOTION
+  SYSTEM
+}

@@ -1,0 +1,20 @@
+{
+  "name": "young-massage-crm",
+  "version": "1.0.0",
+  "description": "揚翼運動按摩會員管理系統",
+  "scripts": {
+    "build": "cd client && npm run build",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm start",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "migrate": "cd server && npx prisma migrate deploy",
+    "generate": "cd server && npx prisma generate"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["massage", "crm", "line", "vercel", "planetscale"],
+  "author": "揚翼運動按摩",
+  "license": "MIT"
+}
